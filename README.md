@@ -1,6 +1,6 @@
 # kumo-bot
 
-A discord bot for the KumoDesu server.
+A kumo related discord bot.
 
 # features:
 :notebook: backlog |
