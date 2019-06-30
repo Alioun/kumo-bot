@@ -10,7 +10,8 @@ A kumo related discord bot.
 
 | Status        | Feature       |
 |:-------------:|:-------------:|
-|:notebook:|Manga Chapter Notification|
+|:soon:|Manga Chapter Notification|
 |:notebook:|WN Chapter Notification|
-|:notebook:|Wiki Database (e.g.: -kw pride -> definition)|
+|:notebook:|LN Volume Notification|
+|:heavy_check_mark:|Wiki Database (e.g.: -kw pride -> definition)|
 |:notebook:|Tweets from the Author or Official Account|
