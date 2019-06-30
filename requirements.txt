@@ -1,3 +1,4 @@
 discord.py>=1.2.3
 wikia>=1.4.3
 tinydb>=3.13.0
+feedparser>=5.2.1
