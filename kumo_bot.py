@@ -6,7 +6,8 @@ from discord import Colour
 from discord import Embed
 
 initial_extensions = ['cogs.wiki',
-                      'cogs.settings']
+                      'cogs.settings',
+                      'cogs.manga_chapter_notification']
 
 bot = commands.Bot(command_prefix='-')
 bot.remove_command('help')
