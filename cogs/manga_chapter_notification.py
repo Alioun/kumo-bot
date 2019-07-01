@@ -13,49 +13,69 @@ class MangaCog(commands.Cog):
         self.bot = bot
         self.db = TinyDB('db.json')
         self.manga_rss = 'https://mangadex.org/rss/wRFyMxNqKYevsgmkEUQ5VrXBWZd6zpuT/manga_id/17709'
-        self.bot.bg_task = self.bot.loop.create_task(self.manga_bg())
+        self.wn_rss = 'https://rtd.moe/feed/'
+        self.bot.bg_task = self.bot.loop.create_task(self.chapter_check_bg())
 
-    @commands.command(name='manga')
-    async def manga(self, ctx):
-        rss = feedparser.parse(self.manga_rss)
-        await ctx.send(f'**{rss.entries[0].title}:**\n\n{rss.entries[0].link}\n\n**')
+    @commands.command(name='test_announce')
+    async def test_announce(self, ctx, channel_type, rss):
+        await self.announce_update(feedparser.parse(rss).entries[0], Query(), channel_type)
 
-    async def manga_bg(self):
+    async def chapter_check_bg(self):
         await self.bot.wait_until_ready()
-        rss = feedparser.parse(self.manga_rss)
         while not self.bot.is_closed():
-            query = Query()
-            query_res = self.db.search((query.type == 'manga_chapter') & (query.title == rss.entries[0].title))
-            if not query_res:
-                try:
-                    await self.set_latest(query, 'manga_chapter', rss.entries[0].title)
-                    await self.announce_update(rss, query)
-                except Exception:
-                    print(f'Failed to set the chapter and send it.', file=sys.stderr)
-                    traceback.print_exc()
+            await self.chapter_check(self.manga_rss, 'manga_chapter', 'manga')
+            await self.chapter_check(self.wn_rss, 'wn_chapter', 'web_novel')
+            await asyncio.sleep(20)
+
+    async def chapter_check(self, rss, chapter_type, channel_type):
+        rss = feedparser.parse(rss)
+        chapter = ''
+        try:
+            if chapter_type == 'wn_chapter':
+                for update in rss.entries:
+                    if 'kumo desu' in update.title.lower():
+                        chapter = update
+                        break
             else:
-                await self.set_latest(query, 'manga_chapter', rss.entries[0].title)
+                chapter = rss.entries[0]
+            if chapter == '':
+                return
+        except Exception:
+            print(f'Failed to set the chapter name.', file=sys.stderr)
+            traceback.print_exc()
+        query = Query()
+        query_res = self.db.search((query.type == chapter_type) & (query.title == chapter.title))
+        if not query_res:
+            try:
+                await self.set_latest(query, chapter_type, chapter.title)
+                await self.announce_update(chapter, query, channel_type)
+            except Exception:
+                print(f'Failed to set the chapter and send it.', file=sys.stderr)
+                traceback.print_exc()
+        else:
+            await self.set_latest(query, chapter_type, rss.entries[0].title)
 
-            await asyncio.sleep(10)
-
-    async def announce_update(self, rss, query):
-        query_res = self.db.search((query.type == 'manga'))
+    async def announce_update(self, chapter, query, channel_type):
+        query_res = self.db.search((query.type == channel_type))
         if query_res:
             try:
                 for channel in query_res:
                     cha = self.bot.get_channel(channel['channel_id'])
                     await cha.send(
-                        f"***<@&{channel['role_id']}> REJOICE , FOR THERE IS A NEW CHAPTER***\n\n\n{rss.entries[0].title}:**\n\n\n{rss.entries[0].link}\n\n**")
+                        f"***<@&{channel['role_id']}>***\n\n\n{chapter.title}:** has been translated and "
+                        f"released on MangaDex! Discussion of the new chapter will take place in "
+                        f"<#{channel['channel_id']}> or the stickied post on Reddit. "
+                        f"\n\n<https://www.reddit.com/r/KumoDesu>**\n\n\n{chapter.link}\n\n")
             except Exception:
                 print(f'Failed to print.', file=sys.stderr)
                 traceback.print_exc()
 
-    async def set_latest(self, query, type, title):
-        query_res = self.db.search((query.type == 'manga_chapter'))
+    async def set_latest(self, query, chapter_type, title):
+        query_res = self.db.search((query.type == chapter_type))
         if not query_res:
-            self.db.insert({'type': type, 'title': title})
+            self.db.insert({'type': chapter_type, 'title': title})
         else:
-            self.db.update({'title': title}, (query.type == 'manga_chapter'))
+            self.db.update({'title': title}, (query.type == chapter_type))
 
 
 def setup(bot):
