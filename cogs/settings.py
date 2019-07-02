@@ -14,8 +14,8 @@ class SettingsCog(commands.Cog):
     @commands.command()
     async def prefix(self, ctx, prefix):
 
-        query_res = self.announce_table.search(
-            (self.query.type == 'bot_channel') & (self.query.channel_id == ctx.channel.id) & (
+        query_res = self.db.search(
+            (self.query.type == 'bot_channel') & (self.query.bot_channel_id == ctx.channel.id) & (
                         self.query.guild_id == ctx.guild.id))
         if query_res:
             self.bot.command_prefix = prefix
@@ -34,6 +34,10 @@ class SettingsCog(commands.Cog):
     @commands.command(name='sawn')
     async def set_announce_web_novel(self, ctx, notif_channel, notif_role, discuss_channel):
         await self.set_announce(ctx, 'Web Novel', notif_channel, notif_role, discuss_channel)
+
+    @commands.command(name='saa')
+    async def set_announce_anime(self, ctx, notif_channel, notif_role, discuss_channel):
+        await self.set_announce(ctx, 'Anime', notif_channel, notif_role, discuss_channel)
 
     @commands.command(name='sfm')
     async def set_feed_manga(self, ctx, feed_url):
@@ -57,7 +61,7 @@ class SettingsCog(commands.Cog):
             await ctx.send(f'Successfully set bot channel channel to {bot_channel}')
         else:
 
-            self.db.update({'channel_id': channel_id}, (self.query.type == 'bot_channel')
+            self.db.update({'bot_channel_id': channel_id}, (self.query.type == 'bot_channel')
                            & (self.query.guild_id == ctx.guild.id))
             await ctx.send(f'Bot Channel updated to {bot_channel}')
 
