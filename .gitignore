@@ -108,3 +108,9 @@ kumo-dev/
 #secret_tokens
 .bot_token
 .idea/workspace.xml
+.idea/kumo-bot.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+bot_token
+db.json
