@@ -105,5 +105,6 @@ kumo-dev/
 # mypy
 .mypy_cache/
 
-#secret_tokens
-.bot_token
+#bot related
+bot_token
+db.json
