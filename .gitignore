@@ -105,6 +105,11 @@ kumo-dev/
 # mypy
 .mypy_cache/
 
-#bot related
+#secret_tokens
+.idea/workspace.xml
+.idea/kumo-bot.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
 bot_token
 db.json

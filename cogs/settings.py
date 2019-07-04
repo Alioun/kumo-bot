@@ -9,6 +9,8 @@ class SettingsCog(commands.Cog):
         self.db = TinyDB('db.json')
         self.announce_table = self.db.table('announcements')
         self.feed_table = self.db.table('feeds')
+        self.chapter_table = self.db.table('chapters')
+        self.tweet_table = self.db.table('tweets')
         self.query = Query()
 
     @commands.command()
