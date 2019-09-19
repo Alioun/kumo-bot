@@ -14,4 +14,4 @@ A kumo related discord bot.
 |:notebook:|WN Chapter Notification|
 |:notebook:|LN Volume Notification|
 |:heavy_check_mark:|Wiki Database (e.g.: -kw pride -> definition)|
-|:notebook:|Tweets from the Author or Official Account|
+|:heavy_check_mark:|Tweets from the Author or Official Account|
