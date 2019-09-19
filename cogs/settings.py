@@ -16,14 +16,16 @@ class SettingsCog(commands.Cog):
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def prefix(self, ctx, prefix):
-        query_res = self.db.search(
-            (self.query.type == 'bot_channel') & (self.query.bot_channel_id == ctx.channel.id) & (
-                    self.query.guild_id == ctx.guild.id))
-        if query_res:
-            self.bot.command_prefix = prefix
+
+        query_res = self.db.search((self.query.type == 'prefix') & (self.query.guild_id == ctx.guild.id))
+        if not query_res:
+            self.db.insert({'type': 'prefix', 'value': prefix, 'guild_id': ctx.guild.id})
             await ctx.send(f'Prefix successfully changed to: {prefix}')
         else:
-            await ctx.send('Command not allowed in this channel.')
+
+            self.db.update({'value': prefix}, (self.query.type == 'prefix')
+                           & (self.query.guild_id == ctx.guild.id))
+            await ctx.send(f'Prefix successfully updated to: {prefix}')
 
     @commands.command(name='sam')
     @commands.has_permissions(administrator=True)
@@ -59,21 +61,6 @@ class SettingsCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def set_feed_web_novel(self, ctx, feed_url):
         await self.set_feed(ctx, 'Web Novel', feed_url)
-
-    @commands.command(name='sbc')
-    @commands.has_permissions(administrator=True)
-    async def set_bot_channel(self, ctx, bot_channel):
-        channel_id = int(bot_channel[2:-1])
-
-        query_res = self.db.search((self.query.type == 'bot_channel') & (self.query.guild_id == ctx.guild.id))
-        if not query_res:
-            self.db.insert({'type': 'bot_channel', 'bot_channel_id': channel_id, 'guild_id': ctx.guild.id})
-            await ctx.send(f'Successfully set bot channel channel to {bot_channel}')
-        else:
-
-            self.db.update({'bot_channel_id': channel_id}, (self.query.type == 'bot_channel')
-                           & (self.query.guild_id == ctx.guild.id))
-            await ctx.send(f'Bot Channel updated to {bot_channel}')
 
     @commands.command(name='lac')
     @commands.has_permissions(administrator=True)

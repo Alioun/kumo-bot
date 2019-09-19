@@ -22,7 +22,7 @@ class TemplateCog(commands.Cog):
         self.api = tweepy.API(auth)
 
         self.bot.bg_task = self.bot.loop.create_task(self.bg_task())
-        self.update_time = 30
+        self.update_time = 60
 
     @commands.command(name='sth')
     @commands.has_permissions(administrator=True)
