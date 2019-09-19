@@ -6,7 +6,8 @@ from discord import Colour
 from discord import Embed
 
 initial_extensions = ['cogs.wiki',
-                      'cogs.settings']
+                      'cogs.settings',
+                      'cogs.tweets']
 
 bot = commands.Bot(command_prefix='-')
 bot.remove_command('help')
@@ -26,6 +27,7 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
 
 
+# todo change with the different permissions in mind
 @bot.command()
 async def help(ctx):
     embed = Embed(colour=Colour.dark_red())

@@ -14,11 +14,11 @@ class SettingsCog(commands.Cog):
         self.query = Query()
 
     @commands.command()
+    @commands.has_permissions(administrator=True)
     async def prefix(self, ctx, prefix):
-
         query_res = self.db.search(
             (self.query.type == 'bot_channel') & (self.query.bot_channel_id == ctx.channel.id) & (
-                        self.query.guild_id == ctx.guild.id))
+                    self.query.guild_id == ctx.guild.id))
         if query_res:
             self.bot.command_prefix = prefix
             await ctx.send(f'Prefix successfully changed to: {prefix}')
@@ -26,34 +26,42 @@ class SettingsCog(commands.Cog):
             await ctx.send('Command not allowed in this channel.')
 
     @commands.command(name='sam')
+    @commands.has_permissions(administrator=True)
     async def set_announce_manga(self, ctx, notif_channel, notif_role, discuss_channel):
         await self.set_announce(ctx, 'Manga', notif_channel, notif_role, discuss_channel)
 
     @commands.command(name='saln')
+    @commands.has_permissions(administrator=True)
     async def set_announce_light_novel(self, ctx, notif_channel, notif_role, discuss_channel):
         await self.set_announce(ctx, 'Light Novel', notif_channel, notif_role, discuss_channel)
 
     @commands.command(name='sawn')
+    @commands.has_permissions(administrator=True)
     async def set_announce_web_novel(self, ctx, notif_channel, notif_role, discuss_channel):
         await self.set_announce(ctx, 'Web Novel', notif_channel, notif_role, discuss_channel)
 
     @commands.command(name='saa')
+    @commands.has_permissions(administrator=True)
     async def set_announce_anime(self, ctx, notif_channel, notif_role, discuss_channel):
         await self.set_announce(ctx, 'Anime', notif_channel, notif_role, discuss_channel)
 
     @commands.command(name='sfm')
+    @commands.has_permissions(administrator=True)
     async def set_feed_manga(self, ctx, feed_url):
         await self.set_feed(ctx, 'Manga', feed_url)
 
     @commands.command(name='sfln')
+    @commands.has_permissions(administrator=True)
     async def set_feed_light_novel(self, ctx, feed_url):
         await self.set_feed(ctx, 'Light Novel', feed_url)
 
     @commands.command(name='sfwn')
+    @commands.has_permissions(administrator=True)
     async def set_feed_web_novel(self, ctx, feed_url):
         await self.set_feed(ctx, 'Web Novel', feed_url)
 
     @commands.command(name='sbc')
+    @commands.has_permissions(administrator=True)
     async def set_bot_channel(self, ctx, bot_channel):
         channel_id = int(bot_channel[2:-1])
 
@@ -68,6 +76,7 @@ class SettingsCog(commands.Cog):
             await ctx.send(f'Bot Channel updated to {bot_channel}')
 
     @commands.command(name='lac')
+    @commands.has_permissions(administrator=True)
     async def list_announce_channels(self, ctx):
         announce_items = self.announce_table.all()
         msg = '**ID** » Type | Announcement Channel | Role | Discuss Channel\n'
@@ -82,6 +91,7 @@ class SettingsCog(commands.Cog):
         await ctx.send(msg)
 
     @commands.command(name='lf')
+    @commands.has_permissions(administrator=True)
     async def list_feeds(self, ctx):
         feed_items = self.feed_table.all()
         msg = '**ID** » Type | Feed URL\n'
@@ -92,20 +102,22 @@ class SettingsCog(commands.Cog):
         await ctx.send(msg)
 
     @commands.command(name='dac')
+    @commands.has_permissions(administrator=True)
     async def delete_announce_channel(self, ctx, id):
         id = int(id)
         doc = self.announce_table.get(doc_id=id)
-        if doc.get('guild_id') == ctx.guild.id:
+        if doc and doc.get('guild_id') == ctx.guild.id:
             self.announce_table.remove(doc_ids=[id])
             await ctx.send(f'Successfully deleted channel with ID **{id}**.')
         else:
             await ctx.send(f'Wrong ID.')
 
     @commands.command(name='df')
+    @commands.has_permissions(administrator=True)
     async def delete_feed(self, ctx, id):
         id = int(id)
         doc = self.feed_table.get(doc_id=id)
-        if doc.get('guild_id') == ctx.guild.id:
+        if doc and doc.get('guild_id') == ctx.guild.id:
             self.feed_table.remove(doc_ids=[id])
             await ctx.send(f'Successfully deleted feed with ID **{id}**.')
         else:
@@ -147,6 +159,24 @@ class SettingsCog(commands.Cog):
             await ctx.send(f'Successfully set **{type}** feed with {feed_url}')
         else:
             await ctx.send('Feed was already set.')
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if hasattr(ctx.command, 'on_error'):
+            return
+
+        ignored = (commands.CommandNotFound, commands.UserInputError)
+
+        # Allows us to check for original exceptions raised and sent to CommandInvokeError.
+        # If nothing is found. We keep the exception passed to on_command_error.
+        error = getattr(error, 'original', error)
+
+        # Anything in ignored will return and prevent anything happening.
+        if isinstance(error, ignored):
+            return
+
+        if isinstance(error, commands.CheckFailure):
+            await ctx.send("Insufficient permissions!")
 
 
 def setup(bot):
