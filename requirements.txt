@@ -2,3 +2,7 @@ discord.py>=1.2.3
 wikia>=1.4.3
 tinydb>=3.13.0
 feedparser>=5.2.1
+tinydb>=3.14.1
+tweepy>=3.8.0
+asyncio>=3.4.3
+tinydb-constraint>=0.1.8.1

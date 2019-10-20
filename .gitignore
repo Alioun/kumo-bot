@@ -114,3 +114,4 @@ kumo-dev/
 .idea/vcs.xml
 bot_token
 db.json
+twitter_auth

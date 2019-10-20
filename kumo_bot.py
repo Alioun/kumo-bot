@@ -4,12 +4,27 @@ import traceback
 from discord.ext import commands
 from discord import Colour
 from discord import Embed
+from tinydb import TinyDB, Query
 
 initial_extensions = ['cogs.wiki',
                       'cogs.settings',
-                      'cogs.manga_chapter_notification']
+                      'cogs.manga_chapter_notification',
+                      'cogs.settings',
+                      'cogs.tweets']
 
-bot = commands.Bot(command_prefix='-')
+db = TinyDB('db.json')
+query = Query()
+
+
+def get_prefix(bot, message):
+    query_res = db.search((query.type == 'prefix') & (query.guild_id == message.guild.id))
+    prefix = {}
+    if query_res:
+        prefix = query_res[0]
+    return prefix.get('value', '-')
+
+
+bot = commands.Bot(command_prefix=get_prefix)
 bot.remove_command('help')
 
 # load the extensions(cogs) listed above in [initial_extensions]
@@ -27,6 +42,7 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
 
 
+# todo change with the different permissions in mind
 @bot.command()
 async def help(ctx):
     embed = Embed(colour=Colour.dark_red())
