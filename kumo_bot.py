@@ -6,11 +6,14 @@ from discord import Colour
 from discord import Embed
 from tinydb import TinyDB, Query
 
+TinyDB.DEFAULT_TABLE_KWARGS = {'cache_size': 0}
+
 initial_extensions = ['cogs.wiki',
                       'cogs.settings',
                       'cogs.tweets']
 
 db = TinyDB('db.json')
+
 query = Query()
 
 def get_prefix(bot, message):
@@ -18,6 +21,7 @@ def get_prefix(bot, message):
     prefix = {}
     if query_res:
         prefix = query_res[0]
+    print(prefix.get('value', '-'))
     return prefix.get('value', '-')
 
 
