@@ -21,7 +21,6 @@ def get_prefix(bot, message):
     prefix = {}
     if query_res:
         prefix = query_res[0]
-    print(prefix.get('value', '-'))
     return prefix.get('value', '-')
 
 
