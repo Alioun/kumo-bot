@@ -11,6 +11,7 @@ class SettingsCog(commands.Cog):
         self.feed_table = self.db.table('feeds')
         self.chapter_table = self.db.table('chapters')
         self.tweet_table = self.db.table('tweets')
+        self.report_table = self.db.table('reports')
         self.query = Query()
 
     @commands.command()
@@ -32,6 +33,11 @@ class SettingsCog(commands.Cog):
     async def set_announce_manga(self, ctx, notif_channel, notif_role, discuss_channel):
         await self.set_announce(ctx, 'Manga', notif_channel, notif_role, discuss_channel)
 
+    @commands.command(name='samso')
+    @commands.has_permissions(administrator=True)
+    async def set_announce_manga_spin_off(self, ctx, notif_channel, notif_role, discuss_channel):
+        await self.set_announce(ctx, 'Manga Spin-Off', notif_channel, notif_role, discuss_channel)
+
     @commands.command(name='saln')
     @commands.has_permissions(administrator=True)
     async def set_announce_light_novel(self, ctx, notif_channel, notif_role, discuss_channel):
@@ -52,6 +58,11 @@ class SettingsCog(commands.Cog):
     async def set_feed_manga(self, ctx, feed_url):
         await self.set_feed(ctx, 'Manga', feed_url)
 
+    @commands.command(name='sfmso')
+    @commands.has_permissions(administrator=True)
+    async def set_feed_manga_spin_off(self, ctx, feed_url):
+        await self.set_feed(ctx, 'Manga Spin-Off', feed_url)
+
     @commands.command(name='sfln')
     @commands.has_permissions(administrator=True)
     async def set_feed_light_novel(self, ctx, feed_url):
@@ -66,7 +77,7 @@ class SettingsCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def list_announce_channels(self, ctx):
         announce_items = self.announce_table.all()
-        msg = '**ID** » Type | Announcement Channel | Role | Discuss Channel\n'
+        msg = '**ID** » Type | Announcement Channel | Role | Discuss Channel | Silence time\n'
         msg = msg + '--------------------------------------------------\n'
         for item in announce_items:
             if item['guild_id'] == ctx.guild.id:
@@ -74,7 +85,8 @@ class SettingsCog(commands.Cog):
                     f'{item["type"]} | ' \
                     f'<#{item["notif_channel_id"]}> | ' \
                     f'<@&{item["role_id"]}> | ' \
-                    f'<#{item["discuss_channel_id"]}>\n'
+                    f'<#{item["discuss_channel_id"]}>  | '\
+                    f'{item["silence"]} update{"s" if int(item["silence"]) > 1 else ""}\n'
         await ctx.send(msg)
 
     @commands.command(name='lf')
@@ -146,6 +158,46 @@ class SettingsCog(commands.Cog):
             await ctx.send(f'Successfully set **{type}** feed with {feed_url}')
         else:
             await ctx.send('Feed was already set.')
+
+    @commands.command(name='silm')
+    @commands.has_permissions(administrator=True)
+    async def silence_manga(self, ctx, time):
+        await self.silence_updates(ctx, 'Manga', time)
+
+    @commands.command(name='silmso')
+    @commands.has_permissions(administrator=True)
+    async def silence_manga_spin_off(self, ctx, time):
+        await self.silence_updates(ctx, 'Manga Spin-Off', time)
+
+    @commands.command(name='silwn')
+    @commands.has_permissions(administrator=True)
+    async def silence_web_novel(self, ctx, time):
+        await self.silence_updates(ctx, 'Web Novel', time)
+
+    @commands.command(name='silall')
+    @commands.has_permissions(administrator=True)
+    async def silence_all(self, ctx, time):
+        await self.silence_updates(ctx, 'Manga', time)
+        await self.silence_updates(ctx, 'Manga Spin-Off', time)
+        await self.silence_updates(ctx, 'Web Novel', time)
+
+    async def silence_updates(self, ctx, type, time):
+        query_res = self.announce_table.search(self.query.type == type)
+        if query_res:
+            self.announce_table.update({'silence': int(time)}, (self.query.type == type))
+        if int(time) > 0:
+            await ctx.send(f'**{type}** updates were silenced for **{time}** update{"s" if int(time) > 1 else ""}')
+        else:
+            await ctx.send(f'**{type}** updates will continue as normal')
+
+    #TODO LN command for reminder
+
+    @commands.command(name='clrsil')
+    @commands.has_permissions(administrator=True)
+    async def clear_silences(self, ctx):
+        await self.silence_updates(ctx, 'Manga', '0')
+        await self.silence_updates(ctx, 'Manga Spin-Off', '0')
+        await self.silence_updates(ctx, 'Web Novel', '0')
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

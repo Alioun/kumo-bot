@@ -8,9 +8,10 @@ from tinydb import TinyDB, Query
 
 initial_extensions = ['cogs.wiki',
                       'cogs.settings',
-                      'cogs.manga_chapter_notification',
-                      'cogs.settings',
-                      'cogs.tweets']
+                      'cogs.chapter-update',
+                      'cogs.tweets',
+                      'cogs.reports',
+                      'cogs.user-commands']
 
 db = TinyDB('db.json')
 query = Query()
